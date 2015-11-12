@@ -1,46 +1,58 @@
 #!Important: all tests can only be achieved with single letter labels.
 #            It might also be a good idea to avoid the label 'X'
 
-#d1 <- euleR(c(A=100, B=100, C=110, "A&B"=20, "A&C"=20,"A&B&C"=10))
-#d2 <- euleR(c(A=200, B=100, C=110, "A&B"=20, "A&C"=20,"A&B&C"=10))
-#d3 <- euleR(c(A=100, B=200, C=110, "A&B"=20, "A&C"=20,"A&B&C"=10))
-#d4 <- euleR(c(A=100, B=100, C=310, "A&B"=20, "A&C"=20,"A&B&C"=10))
+# specs
+s1 <- c(A=100, B=100, C=110, "A&B"=20, "A&C"=20,"A&B&C"=10)
+s2 <- c(A=200, B=100, C=110, "A&B"=20, "A&C"=20,"A&B&C"=10)
+s3 <- c(A=100, B=200, C=110, "A&B"=20, "A&C"=20,"A&B&C"=10)
+s4 <- c(A=100, B=100, C=310, "A&B"=20, "A&C"=20,"A&B&C"=10)
 
-#my_data <- lapply(list(d1, d2, d3, d4), gather)
+spec_list <- list(s1, s2, s3, s4)
 
-#all <- do.call("rbind", my_data)
+#all <- do.call("rbind", lapply(spec_list, runLevel())
 
 dig <- function(x) x[1]
 
 gather <- function (x) {
   df <- data.frame(t(sapply(x$areas, dig)))
-  #df <- cbind(df, duration=x$duration)
 }
 
 runLevel <- function (id, area_spec) {
   vennom_level <- runVennomLevel (id, area_spec)
   venneuler_level <- runVennEulerLevel (id, area_spec)
+
+  rbind(vennom_level, venneuler_level)
 }
 
 runVennEulerLevel <- function (id, area_spec) {
-  venneuler  <- venneuler(area_spec)
+  duration <- system.time(venneuler  <- venneuler(area_spec))
   
   # Now post some of the venneuler data away to compute the actual areas.
-  circles <- cbind(venneuler$centers, diameter=venneuler$diameters)
+  radii = mapply(function(d) {d/2.0}, venneuler$diameters) # convert diameters into radii
+  circles <- cbind(venneuler$centers, radius=radii)
   cs <- foreach (i=1:nrow(circles)) %do% c(circles[i,][1], circles[i,][2], circles[i,][3], label=rownames(circles)[i])
   json <- toJSON(list(circles=cs))
+  
+  print(json)
   
   # POST to web service
   httpheader <- c(Accept="application/json; charset=UTF-8",
                   "Content-Type"="application/json")
+  # hardcoded URL as testharness is only ever run by someone who has a local running service.
   result <- postForm('http://localhost:8080/areas', .opts=list(httpheader=httpheader
                                             , postfields=json))
   
-  vf <- gather(result)
-  #vf <- cbind(vf, treatment="venneuler")
+  vf <- gather(fromJSON(result))
+
+  vf <- normalizeFrameLabels(vf)
+  area_spec <-normalizeFrameLabels(area_spec)
   
-  vf <- renameFrame(vf)
-  print(vf)
+  # FIXME: get the duration in milliseconds
+  df  = data.frame(t(c("duration"=0, "treatment"="venneuler")))
+  
+  cmp <- populateFrame(id, area_spec, vf)
+
+  cbind(df, cmp)
 }
 
 runVennomLevel <- function (id, area_spec) {
@@ -55,9 +67,8 @@ runVennomLevel <- function (id, area_spec) {
   df = data.frame(t(c("duration"=euler$duration, "treatment"="vennom")))
   
   cmp <- populateFrame(id, area_spec, ef)
-  print(df)
-  print(cmp)
-  #merge(cmp, df)
+  
+  cbind(df, cmp)
 }
 
 populateFrame <- function (diagram_id, expected_frame,  actual_frame) {
