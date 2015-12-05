@@ -1,6 +1,9 @@
 #!Important: all tests can only be achieved with single letter labels.
 #            It might also be a good idea to avoid the label 'X'
 
+library("euleR")
+library("venneuler")
+
 # specs
 s1 <- c(A=100, B=100, C=110, "A&B"=20, "A&C"=20,"A&B&C"=10)
 s2 <- c(A=200, B=100, C=110, "A&B"=20, "A&C"=20,"A&B&C"=10)
@@ -128,3 +131,5 @@ normalizeFrameLabels <- function (df) {
 strSort <- function(x) {
   sapply(lapply(strsplit(x, NULL), sort), paste, collapse="")
 }
+
+runLevel("s1", s1)

@@ -1,2 +1,2 @@
 all:
-	R src/test.R
+	R --no-save < src/test.R
