@@ -86,16 +86,20 @@ populateFrame <- function (diagram_id, expected_frame,  actual_frame) {
   # At this stage the names of frames are subsets of venn_set
   # Get subset of actual_frame that is in expected_frame
   diff    <- setdiff(venn_set, names(actual_frame))
+  diffe   <- setdiff(venn_set, names(expected_frame))
   
   # Set other areas of the venn set to 
   actual_frame[unlist(diff)] <- 0.0
+  expected_frame[unlist(diffe)] <- 0.0
   
   # Normalise each frame such that all areas add up to 1.0
   actual_frame   <- normalizeFrame(actual_frame)
+  expected_frame <- normalizeFrame(expected_frame)
   
   # diagram id, Pearson coefficient, number of circles, number of zones required, # over requirements, # under requirements
   #length(circles) is number of circles
-  data.frame(t(c(id=diagram_id, num_required_zone=length(required_zones), num_required_circles=length(required_circles), venn_data=actual_frame)))
+  pearson_coeff <- cor(actual_frame, expected_frame)
+  data.frame(t(c(id=diagram_id, pearson_coeffecient=pearson_coeff, num_required_zone=length(required_zones), num_required_circles=length(required_circles))))
 }
 
 dropColumns <- function(frame, columns) {
