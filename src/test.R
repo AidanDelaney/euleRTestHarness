@@ -36,7 +36,7 @@ runVennEulerLevel <- function (id, area_spec) {
   cs <- foreach (i=1:nrow(circles)) %do% c(circles[i,][1], circles[i,][2], circles[i,][3], label=rownames(circles)[i])
   json <- toJSON(list(circles=cs))
   
-  print(json)
+  #print(json)
   
   # POST to web service
   httpheader <- c(Accept="application/json; charset=UTF-8",
@@ -132,4 +132,11 @@ strSort <- function(x) {
   sapply(lapply(strsplit(x, NULL), sort), paste, collapse="")
 }
 
-runLevel("s1", s1)
+df1 <- runLevel("s1", s1)
+df2 <- runLevel("s2", s2)
+df3 <- runLevel("s3", s3)
+df4 <- runLevel("s4", s4)
+
+all <- rbind(df1, df2, df3, df4)
+
+write.csv2(all, file="results.csv")
