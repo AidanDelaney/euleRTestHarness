@@ -1,25 +1,69 @@
+# test.R
+# A test script to run comparative tests between euleR and venneuler R libs.
+#
+# The core task is to generate area-proportional Euler diagrams using (a) euleR
+# and (b) venneuler.  To do this we:
+#
+#  1. define an area specification.
+#  2. generate both an euler and a venneuler diagram.
+#  3. compare the area specification with the actual results from each treatment
+#
+# The comparison is achieved by comparing the area specificaiton for a Venn
+# diagram with the Venn diagram specification obtained from euleR/venneuler. The
+# following is an example:
+#
+# Let `s1 <- c(A=100, B=100, "A&C"=50)` be an area specification.  This
+# introduces the contours A, B, and C into our diagram.  Suppose the euleR
+# library returns zone (A, BC) with area 98, (AC, B) with area 70 and (B, AC)
+# with area 100.
+#
+# The original area specification is expanded to (A, BC) = 100, (B, AC) = 100,
+# (AC, B) = 50, (AB, C) = 0, (ABC, ) = 0, (BC, A) = 0, (C, AB) = 0.  The
+# returned specification from euleR is similarly expanded and all zones that are
+# not present are given area 0.
+#
+# From the "Venn-set" of zones in the area specification and that returned by
+# euleR, we then use the `cor` function in R to compute the Pearson correlation
+# coefficient.  A similar correlation is made between the area specifcation and
+# the results returned from venneuler.
+
 #!Important: all tests can only be achieved with single letter labels.
 #            It might also be a good idea to avoid the label 'X'
+
+#!Important: all tests require a locally running instance of [Köttelbrücke](https://github.com/AidanDelaney/K-ttelbr-cke)
 
 library("euleR")
 library("venneuler")
 
 # specs
+# Adding a spec:
+#
+#  * You'll need to add your area specification below.
+#  * Thereafter, you'll have to extend the list of calls to `runLevel` to
+#    include your new area spec.
+#
+# TODO: automate all of this.
 s1 <- c(A=100, B=100, C=110, "A&B"=20, "A&C"=20,"A&B&C"=10)
 s2 <- c(A=200, B=100, C=110, "A&B"=20, "A&C"=20,"A&B&C"=10)
 s3 <- c(A=100, B=200, C=110, "A&B"=20, "A&C"=20,"A&B&C"=10)
 s4 <- c(A=100, B=100, C=310, "A&B"=20, "A&C"=20,"A&B&C"=10)
 
-spec_list <- list(s1, s2, s3, s4)
+#spec_list <- list(s1, s2, s3, s4)
 
 #all <- do.call("rbind", lapply(spec_list, runLevel())
 
+# Used to grab some data from the child of a JSON object
 dig <- function(x) x[1]
 
+# Get the 'areas' information from a JSON object.
 gather <- function (x) {
   df <- data.frame(t(sapply(x$areas, dig)))
 }
 
+# A level is both treatments of an input area spec.
+#
+# TODO: generate the id from the name of the area_spec, this allows the
+# automation referred to above.
 runLevel <- function (id, area_spec) {
   vennom_level <- runVennomLevel (id, area_spec)
   venneuler_level <- runVennEulerLevel (id, area_spec)
@@ -27,32 +71,35 @@ runLevel <- function (id, area_spec) {
   rbind(vennom_level, venneuler_level)
 }
 
+# Run VennEuler for a single input area_spec
 runVennEulerLevel <- function (id, area_spec) {
+  # Run venneuler and time how long it takes in milliseconds.
   duration <- system.time(venneuler  <- venneuler(area_spec))
-  
+
   # Now post some of the venneuler data away to compute the actual areas.
   radii = mapply(function(d) {d/2.0}, venneuler$diameters) # convert diameters into radii
   circles <- cbind(venneuler$centers, radius=radii)
   cs <- foreach (i=1:nrow(circles)) %do% c(circles[i,][1], circles[i,][2], circles[i,][3], label=rownames(circles)[i])
   json <- toJSON(list(circles=cs))
-  
-  #print(json)
-  
+
   # POST to web service
   httpheader <- c(Accept="application/json; charset=UTF-8",
                   "Content-Type"="application/json")
   # hardcoded URL as testharness is only ever run by someone who has a local running service.
   result <- postForm('http://localhost:8080/areas', .opts=list(httpheader=httpheader
                                             , postfields=json))
-  
+
+  # assemble the results into a dataframe that we can analyse.
   vf <- gather(fromJSON(result))
 
+  # make all the labels in both data_frames syntactically the same
   vf <- normalizeFrameLabels(vf)
   area_spec <-normalizeFrameLabels(area_spec)
-  
+
   # FIXME: get the duration in milliseconds
   df  = data.frame(t(c("duration"=0, "treatment"="venneuler")))
-  
+
+  # do the actual comparision of area_spec and vf
   cmp <- populateFrame(id, area_spec, vf)
 
   cbind(df, cmp)
