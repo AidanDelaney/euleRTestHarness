@@ -4,7 +4,7 @@ This project conducts a specific experiment to compare Euler diagram drawings dr
 
 ## How to run
 
-There's a makefile.  If you have (GNU R)[https://www.r-project.org/] installed, then the makefile should "just work"(tm) so:
+There's a makefile.  If you have [GNU R](https://www.r-project.org/) installed, then the makefile should "just work"(tm) so:
 
 ```sh
 $ make
