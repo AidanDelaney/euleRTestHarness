@@ -106,28 +106,32 @@ runVennEulerLevel <- function (id, area_spec) {
   cbind(df, cmp)
 }
 
+# Run the vennom treatment with an area specification
 runVennomLevel <- function (id, area_spec) {
   euler <- euleR(area_spec)
 
   # Euler Frame
   ef <- gather(euler)
-  
+
   ef <- normalizeFrameLabels(ef)
   area_spec <- normalizeFrameLabels(area_spec)
-  
+
+  # In this case, the webservice passes back the duration of how long the layout
+  # algorithm took to compute the layout.
   df = data.frame(t(c("duration"=euler$duration, "treatment"="vennom")))
-  
+
   cmp <- populateFrame(id, area_spec, ef)
-  
+
   cbind(df, cmp)
 }
 
+# Peform the correlation computation
 populateFrame <- function (diagram_id, expected_frame,  actual_frame) {
   # Assumption: underlying library calls (vennom/vennEuler) won't add in extra circle labels.
   required_circles <- unique(unlist(mapply(function(x) {strsplit(x, '')}, names(expected_frame))))
   required_zones <- names(expected_frame)
   actual_zones <- names(actual_frame)
-  
+
   # Generate Venn-set of expected_frame, setting any unset rows to 0.0
   venn_set <- generateVennSet(required_circles)
 
@@ -135,36 +139,38 @@ populateFrame <- function (diagram_id, expected_frame,  actual_frame) {
   # Get subset of actual_frame that is in expected_frame
   diff    <- setdiff(venn_set, names(actual_frame))
   diffe   <- setdiff(venn_set, names(expected_frame))
-  
-  # Set other areas of the venn set to 
+
+  # Set other areas of the venn set to
   actual_frame[unlist(diff)] <- 0.0
   expected_frame[unlist(diffe)] <- 0.0
-  
+
   # Normalise each frame such that all areas add up to 1.0
   actual_frame   <- normalizeFrame(actual_frame)
   expected_frame <- normalizeFrame(expected_frame)
-  
+
   # diagram id, Pearson coefficient, number of circles, number of zones required, # over requirements, # under requirements
   #length(circles) is number of circles
   pearson_coeff <- cor(actual_frame, expected_frame)
   data.frame(t(c(id=diagram_id, pearson_coeffecient=pearson_coeff, num_required_zone=length(required_zones), num_required_circles=length(required_circles))))
 }
 
-dropColumns <- function(frame, columns) {
-  droppage <- names(frame) %in% columns
-  frame[!droppage]
-}
-
+# Given the labels of the contours, generate the venn set of zones (in a
+# specific microsyntax)
 generateVennSet <- function(labels) {
   labels <- sort(labels)
   unlist(foreach (i=1:length(labels)) %do% apply(combn(labels, i), 2, function (col) { paste(unique(col), sep="", collapse = "")}))
 }
 
+# Given a frame consting of only numeric values, normalise them in the range
+# 0.0 to 1.0
 normalizeFrame <- function (venn_data) {
   sum <- sum(venn_data)
   venn_data <- mapply(function(x) {x/sum}, venn_data)
 }
 
+# Given a label returned from either euleR or venneuler, turn it into some kind
+# of normal form for labels.  Then apply this normalisation to the input data
+# frame.
 normalizeFrameLabels <- function (df) {
   # Rename things in the Euler Frame for easier reading (and merging with the venneuler frame)
   names(df) <- gsub("\\.\\.\\.\\.", "-", names(df))
@@ -172,7 +178,7 @@ normalizeFrameLabels <- function (df) {
   names(df) <- gsub("\\.\\.", "", names(df))
   # All names are now in the form "inset-outset" where each set is of the form "P.Q,R"
   names(df) <- gsub("&", "", names(df))
-  
+
   # Now remove everything in the outset i.e. from the '-' onwards
   # This allows us to compare the output results with the input specification
   names(df) <- gsub("-.*$", "", names(df))
@@ -180,15 +186,19 @@ normalizeFrameLabels <- function (df) {
   df
 }
 
+# Sort a string in lexiographic order.
 strSort <- function(x) {
   sapply(lapply(strsplit(x, NULL), sort), paste, collapse="")
 }
 
+# This runs the actual experiment
 df1 <- runLevel("s1", s1)
 df2 <- runLevel("s2", s2)
 df3 <- runLevel("s3", s3)
 df4 <- runLevel("s4", s4)
 
+# combine results in a single dataframe
 all <- rbind(df1, df2, df3, df4)
 
+# output everything to a CSV file.
 write.csv2(all, file="results.csv")
