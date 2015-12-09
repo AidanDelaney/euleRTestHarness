@@ -48,9 +48,10 @@ s2 <- c(A=200, B=100, C=110, "A&B"=20, "A&C"=20,"A&B&C"=10)
 s3 <- c(A=100, B=200, C=110, "A&B"=20, "A&C"=20,"A&B&C"=10)
 s4 <- c(A=100, B=100, C=310, "A&B"=20, "A&C"=20,"A&B&C"=10)
 
+# When we can automagically generate level id's, then this will run everything.
 #spec_list <- list(s1, s2, s3, s4)
-
 #all <- do.call("rbind", lapply(spec_list, runLevel())
+#write.csv2(rbind(all), file="results.csv")
 
 # Used to grab some data from the child of a JSON object
 dig <- function(x) x[1]
