@@ -90,6 +90,10 @@ runVennEulerLevel <- function (id, area_spec) {
   result <- postForm('http://localhost:8080/areas', .opts=list(httpheader=httpheader
                                             , postfields=json))
 
+  # plot the diagram and save it
+  plot(venneuler)
+  pdf(paste(id, "venneuler.pdf", sep="-"))
+
   # assemble the results into a dataframe that we can analyse.
   vf <- gather(fromJSON(result))
 
@@ -109,6 +113,10 @@ runVennEulerLevel <- function (id, area_spec) {
 # Run the vennom treatment with an area specification
 runVennomLevel <- function (id, area_spec) {
   euler <- euleR(area_spec)
+
+  # plot the diagram and save it
+  plot(euler)
+  pdf(paste(id, "vennom.pdf", sep="-"))
 
   # Euler Frame
   ef <- gather(euler)
@@ -191,6 +199,9 @@ strSort <- function(x) {
   sapply(lapply(strsplit(x, NULL), sort), paste, collapse="")
 }
 
+# Turn off display of generated plots
+graphics.off()
+
 # This runs the actual experiment
 df1 <- runLevel("s1", s1)
 df2 <- runLevel("s2", s2)
@@ -201,4 +212,4 @@ df4 <- runLevel("s4", s4)
 all <- rbind(df1, df2, df3, df4)
 
 # output everything to a CSV file.
-write.csv2(all, file="results.csv")
+write.csv(all, file="results.csv")
