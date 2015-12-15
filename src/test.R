@@ -101,8 +101,8 @@ runVennEulerLevel <- function (id, area_spec) {
   vf <- normalizeFrameLabels(vf)
   area_spec <-normalizeFrameLabels(area_spec)
 
-  # FIXME: get the duration in milliseconds
-  df  = data.frame(t(c("duration"=0, "treatment"="venneuler")))
+  # get the duration in milliseconds
+  df  = data.frame(t(c("duration"=as.integer(duration["elapsed"] * 1000), "treatment"="venneuler")))
 
   # do the actual comparision of area_spec and vf
   cmp <- populateFrame(id, area_spec, vf)
