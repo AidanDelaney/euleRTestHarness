@@ -43,8 +43,8 @@ library("venneuler")
 #    include your new area spec.
 #
 # TODO: automate all of this.
-s1 <- c(A=100, B=100, C=110, "A&B"=20, "A&C"=20,"A&B&C"=10)
-s2 <- c(A=200, B=100, C=110, "A&B"=20, "A&C"=20,"A&B&C"=10)
+s1 <- c(A=100, B=100, C=100, "A&B"=20, "A&C"=20, "B&C"=20, "A&B&C"=10) # Venn 3
+s2 <- c(A=200, B=100, "A&B"=100) # Tunnel 2
 s3 <- c(A=100, B=200, C=110, "A&B"=20, "A&C"=20,"A&B&C"=10)
 s4 <- c(A=100, B=100, C=310, "A&B"=20, "A&C"=20,"A&B&C"=10)
 
@@ -91,8 +91,9 @@ runVennEulerLevel <- function (id, area_spec) {
                                             , postfields=json))
 
   # plot the diagram and save it
-  plot(venneuler)
   pdf(paste(id, "venneuler.pdf", sep="-"))
+  plot(venneuler)
+  dev.off()
 
   # assemble the results into a dataframe that we can analyse.
   vf <- gather(fromJSON(result))
@@ -115,8 +116,9 @@ runVennomLevel <- function (id, area_spec) {
   euler <- euleR(area_spec)
 
   # plot the diagram and save it
+  pdf(paste(id,"vennom.pdf", sep="-"))
   plot(euler)
-  pdf(paste(id, "vennom.pdf", sep="-"))
+  dev.off()
 
   # Euler Frame
   ef <- gather(euler)
@@ -200,9 +202,6 @@ normalizeFrameLabels <- function (df) {
 strSort <- function(x) {
   sapply(lapply(strsplit(x, NULL), sort), paste, collapse="")
 }
-
-# Turn off display of generated plots
-graphics.off()
 
 # This runs the actual experiment
 df1 <- runLevel("s1", s1)
