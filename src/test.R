@@ -212,4 +212,4 @@ df4 <- runLevel("s4", s4)
 all <- rbind(df1, df2, df3, df4)
 
 # output everything to a CSV file.
-write.csv(all, file="results.csv")
+write.csv(all[c("id", "treatment", "num_required_zone", "pearson_coeffecient", "duration")], file="results.csv", row.names=FALSE, quote=FALSE)
