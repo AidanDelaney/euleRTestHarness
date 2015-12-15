@@ -147,6 +147,8 @@ populateFrame <- function (diagram_id, expected_frame,  actual_frame) {
   # Get subset of actual_frame that is in expected_frame
   diff    <- setdiff(venn_set, names(actual_frame))
   diffe   <- setdiff(venn_set, names(expected_frame))
+  missing <- setdiff(names(expected_frame), names(actual_frame))
+  extra   <- setdiff(names(actual_frame), names(expected_frame))
 
   # Set other areas of the venn set to
   actual_frame[unlist(diff)] <- 0.0
@@ -159,7 +161,7 @@ populateFrame <- function (diagram_id, expected_frame,  actual_frame) {
   # diagram id, Pearson coefficient, number of circles, number of zones required, # over requirements, # under requirements
   #length(circles) is number of circles
   pearson_coeff <- cor(actual_frame, expected_frame)
-  data.frame(t(c(id=diagram_id, pearson_coeffecient=pearson_coeff, num_required_zone=length(required_zones), num_required_circles=length(required_circles))))
+  data.frame(t(c(id=diagram_id, pearson_coeffecient=pearson_coeff, num_required_zones=length(required_zones), num_extra_zones=length(extra), num_missing_zones=length(missing), num_actual_zones=length(actual_zones))))
 }
 
 # Given the labels of the contours, generate the venn set of zones (in a
@@ -212,4 +214,4 @@ df4 <- runLevel("s4", s4)
 all <- rbind(df1, df2, df3, df4)
 
 # output everything to a CSV file.
-write.csv(all[c("id", "treatment", "num_required_zone", "pearson_coeffecient", "duration")], file="results.csv", row.names=FALSE, quote=FALSE)
+write.csv(all[c("id", "treatment", "num_required_zones", "num_actual_zones", "num_extra_zones", "num_missing_zones", "pearson_coeffecient", "duration")], file="results.csv", row.names=FALSE, quote=FALSE)
