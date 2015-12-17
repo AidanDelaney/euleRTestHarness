@@ -44,8 +44,8 @@ library("venneuler")
 #
 # TODO: automate all of this.
 s1 <- c(A=100, B=100, C=100, "A&B"=20, "A&C"=20, "B&C"=20, "A&B&C"=10) # Venn 3
-s2 <- c(A=200, B=100, "A&B"=100) # Tunnel 2
-s3 <- c(A=100, B=200, C=110, "A&B"=20, "A&C"=20,"A&B&C"=10)
+s2 <- c(A=200, "A&B"=100) # Tunnel 2
+s3 <- c(A = 4, B = 6,C = 3, D = 2, E = 7, F = 3, "A&B" = 2, "A&F" = 2, "B&C" = 2, "B&D" = 1, "B&F" = 2, "C&D" = 1, "D&E" = 1, "E&F" = 1, "A&B&F" = 1, "B&C&D" = 1)
 s4 <- c(A=100, B=100, C=310, "A&B"=20, "A&C"=20,"A&B&C"=10)
 
 # When we can automagically generate level id's, then this will run everything.
@@ -113,7 +113,7 @@ runVennEulerLevel <- function (id, area_spec) {
 
 # Run the vennom treatment with an area specification
 runVennomLevel <- function (id, area_spec) {
-  euler <- euleR(area_spec)
+  duration <- system.time(euler <- euleR(area_spec))
 
   # plot the diagram and save it
   pdf(paste(id,"vennom.pdf", sep="-"))
