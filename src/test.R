@@ -46,12 +46,12 @@ library("venneuler")
 s1 <- c(A=100, B=100, C=100, "A&B"=20, "A&C"=20, "B&C"=20, "A&B&C"=10) # Venn 3
 s2 <- c(A=200, "A&B"=100) # Tunnel 2
 s3 <- c(A = 4, B = 6,C = 3, D = 2, E = 7, F = 3, "A&B" = 2, "A&F" = 2, "B&C" = 2, "B&D" = 1, "B&F" = 2, "C&D" = 1, "D&E" = 1, "E&F" = 1, "A&B&F" = 1, "B&C&D" = 1)
-s4 <- c(A=100, B=100, C=310, "A&B"=20, "A&C"=20,"A&B&C"=10)
+# SE ->  S, Treat -> T, Anti-CCP -> A ,DAS28 -> D
+s4 <- c(S = 13, T = 28, A = 101, D = 91, "S&T" = 1, "D&S" = 14, "T&A" = 6, "A&D&S" = 1)
 
 # When we can automagically generate level id's, then this will run everything.
 #spec_list <- list(s1, s2, s3, s4)
 #all <- do.call("rbind", lapply(spec_list, runLevel())
-#write.csv2(rbind(all), file="results.csv")
 
 # Used to grab some data from the child of a JSON object
 dig <- function(x) x[1]
@@ -163,7 +163,7 @@ populateFrame <- function (diagram_id, expected_frame,  actual_frame) {
   # diagram id, Pearson coefficient, number of circles, number of zones required, # over requirements, # under requirements
   #length(circles) is number of circles
   pearson_coeff <- cor(actual_frame, expected_frame)
-  data.frame(t(c(id=diagram_id, pearson_coeffecient=pearson_coeff, num_required_zones=length(required_zones), num_extra_zones=length(extra), num_missing_zones=length(missing), num_actual_zones=length(actual_zones))))
+  data.frame(t(c(id=diagram_id, pearson_coeffecient=pearson_coeff, num_circles=length(required_circles), num_required_zones=length(required_zones), num_extra_zones=length(extra), num_missing_zones=length(missing), num_actual_zones=length(actual_zones))))
 }
 
 # Given the labels of the contours, generate the venn set of zones (in a
@@ -213,4 +213,4 @@ df4 <- runLevel("s4", s4)
 all <- rbind(df1, df2, df3, df4)
 
 # output everything to a CSV file.
-write.csv(all[c("id", "treatment", "num_required_zones", "num_actual_zones", "num_extra_zones", "num_missing_zones", "pearson_coeffecient", "duration")], file="results.csv", row.names=FALSE, quote=FALSE)
+write.csv(all[c("id", "treatment", "num_circles", "num_required_zones", "num_actual_zones", "num_extra_zones", "num_missing_zones", "pearson_coeffecient", "duration")], file="results.csv", row.names=FALSE, quote=FALSE)
