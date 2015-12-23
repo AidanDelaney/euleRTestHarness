@@ -35,6 +35,7 @@
 library("euleR")
 library("venneuler")
 
+source("src/books.R")
 # specs
 # Adding a spec:
 #
@@ -48,6 +49,7 @@ s2 <- c(A=200, "A&B"=100) # Tunnel 2
 s3 <- c(A = 4, B = 6,C = 3, D = 2, E = 7, F = 3, "A&B" = 2, "A&F" = 2, "B&C" = 2, "B&D" = 1, "B&F" = 2, "C&D" = 1, "D&E" = 1, "E&F" = 1, "A&B&F" = 1, "B&C&D" = 1)
 # SE ->  S, Treat -> T, Anti-CCP -> A ,DAS28 -> D
 s4 <- c(S = 13, T = 28, A = 101, D = 91, "S&T" = 1, "D&S" = 14, "T&A" = 6, "A&D&S" = 1)
+s5 <- bookData()
 
 # When we can automagically generate level id's, then this will run everything.
 #spec_list <- list(s1, s2, s3, s4)
@@ -208,9 +210,10 @@ df1 <- runLevel("s1", s1)
 df2 <- runLevel("s2", s2)
 df3 <- runLevel("s3", s3)
 df4 <- runLevel("s4", s4)
+df5 <- runLevel("s5", s5)
 
 # combine results in a single dataframe
-all <- rbind(df1, df2, df3, df4)
+all <- rbind(df1, df2, df3, df4, df5)
 
 # output everything to a CSV file.
 write.csv(all[c("id", "treatment", "num_circles", "num_required_zones", "num_actual_zones", "num_extra_zones", "num_missing_zones", "pearson_coeffecient", "duration")], file="results.csv", row.names=FALSE, quote=FALSE)

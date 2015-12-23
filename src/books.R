@@ -52,9 +52,9 @@ calculateZoneCardinality <- function(inz, outz) {
   }
   
 
-  zone_desc <- paste(names(l_inz), names(l_outz), sep="-", collapse="")
+  #zone_desc <- paste(names(l_inz), names(l_outz), sep="-", collapse="")
   e <- c(length(setdiff(unlist(l_inz), unlist(l_outz))))
-  names(e) <- zone_desc
+  names(e) <- names(l_inz)
   e
 }
 
@@ -69,23 +69,21 @@ generateVennCombinations <- function(d) {
     }))
 }
 
-ulysses <- fileToWordList(file="ulysses.txt")
-bible <- fileToWordList(file="bible.txt")
-dorian_gray <- fileToWordList(file="DorianGray.txt")
-silas_marner <- fileToWordList("SilasMarner.txt")
-moby_dick <- fileToWordList("MobyDick.txt")
-macbeth <- fileToWordList("Macbeth.txt")
+bookData <- function () {
+  ulysses <- fileToWordList(file="ulysses.txt")
+  bible <- fileToWordList(file="bible.txt")
+  dorian_gray <- fileToWordList(file="DorianGray.txt")
+  silas_marner <- fileToWordList("SilasMarner.txt")
+  moby_dick <- fileToWordList("MobyDick.txt")
+  macbeth <- fileToWordList("Macbeth.txt")
 
-u <- list("U"=ulysses)
-b <- list("B"=bible)
-d <- list("D"=dorian_gray)
-s <- list("S"=silas_marner)
-m <- list("M"=moby_dick)
-a <- list("A"=macbeth)
+  u <- list("U"=ulysses)
+  b <- list("B"=bible)
+  d <- list("D"=dorian_gray)
+  s <- list("S"=silas_marner)
+  m <- list("M"=moby_dick)
+  a <- list("A"=macbeth)
 
-vennz <- c(u, b, d, s, m, a)
-foo <- generateVennCombinations(vennz)
-
-#foo <- reduceZoneSpec(intersect, u, c(b,d,s,m,a))
-z_u <- calculateZoneCardinality(c(u), c(b,d,s,m,a))
-print(z_u)
+  vennz <- c(u, b, d, s, m, a)
+  generateVennCombinations(vennz)
+}
