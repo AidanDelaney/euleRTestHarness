@@ -3,12 +3,12 @@ library("venneuler")
 
 library("tm")
 
-#download.file("http://www.gutenberg.org/cache/epub/4300/pg4300.txt", "ulysses.txt")
-#download.file("http://www.gutenberg.org/cache/epub/10/pg10.txt", "bible.txt")
-#download.file("http://www.gutenberg.org/cache/epub/174/pg174.txt", "DorianGray.txt")
-#download.file("http://www.gutenberg.org/cache/epub/550/pg550.txt", "SilasMarner.txt")
-#download.file("http://www.gutenberg.org/cache/epub/2701/pg2701.txt", "MobyDick.txt")
-#download.file("http://www.gutenberg.org/cache/epub/2264/pg2264.txt", "Macbeth.txt")
+download.file("http://www.gutenberg.org/cache/epub/4300/pg4300.txt", "ulysses.txt")
+download.file("http://www.gutenberg.org/cache/epub/10/pg10.txt", "bible.txt")
+download.file("http://www.gutenberg.org/cache/epub/174/pg174.txt", "DorianGray.txt")
+download.file("http://www.gutenberg.org/cache/epub/550/pg550.txt", "SilasMarner.txt")
+download.file("http://www.gutenberg.org/cache/epub/2701/pg2701.txt", "MobyDick.txt")
+download.file("http://www.gutenberg.org/cache/epub/2264/pg2264.txt", "Macbeth.txt")
 
 fileToWordList <- function(file) {
   corpus <- VCorpus(DirSource(directory="/home/aidan/Projects/euleRTestHarness", pattern=file))
