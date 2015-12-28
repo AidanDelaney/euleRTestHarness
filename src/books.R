@@ -98,6 +98,5 @@ bookData <- function () {
   a <- list("A"=macbeth)
 
   vennz <- c(u, b, d, s, m, a)
-  print(vennz)
   generateVennCombinations(vennz)
 }

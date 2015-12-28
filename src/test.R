@@ -51,6 +51,8 @@ s3 <- c(A = 4, B = 6,C = 3, D = 2, E = 7, F = 3, "A&B" = 2, "A&F" = 2, "B&C" = 2
 s4 <- c(S = 13, T = 28, A = 101, D = 91, "S&T" = 1, "D&S" = 14, "T&A" = 6, "A&D&S" = 1)
 s5 <- bookData()
 
+t1 <- c(A=100, B=100, C=100, D=100, "A&B"=50, "A&C"=50, "A&D"=50, "B&C"=50, "B&D"=50, "C&D"=50, "A&B&C"=20, "A&C&D"=20, "B&C&D"=20, "A&B&C&D"=5)
+
 # When we can automagically generate level id's, then this will run everything.
 #spec_list <- list(s1, s2, s3, s4)
 #all <- do.call("rbind", lapply(spec_list, runLevel())
@@ -76,6 +78,7 @@ runLevel <- function (id, area_spec) {
 
 # Run VennEuler for a single input area_spec
 runVennEulerLevel <- function (id, area_spec) {
+  print("venneuler")
   # Run venneuler and time how long it takes in milliseconds.
   duration <- system.time(venneuler  <- venneuler(area_spec))
 
@@ -115,6 +118,7 @@ runVennEulerLevel <- function (id, area_spec) {
 
 # Run the vennom treatment with an area specification
 runVennomLevel <- function (id, area_spec) {
+  print("vennom")
   duration <- system.time(euler <- euleR(area_spec))
 
   # plot the diagram and save it
@@ -164,6 +168,7 @@ populateFrame <- function (diagram_id, expected_frame,  actual_frame) {
 
   # diagram id, Pearson coefficient, number of circles, number of zones required, # over requirements, # under requirements
   #length(circles) is number of circles
+  print(actual_frame)
   pearson_coeff <- cor(actual_frame, expected_frame)
   data.frame(t(c(id=diagram_id, pearson_coeffecient=pearson_coeff, num_circles=length(required_circles), num_required_zones=length(required_zones), num_extra_zones=length(extra), num_missing_zones=length(missing), num_actual_zones=length(actual_zones))))
 }
@@ -211,9 +216,12 @@ df2 <- runLevel("s2", s2)
 df3 <- runLevel("s3", s3)
 df4 <- runLevel("s4", s4)
 df5 <- runLevel("s5", s5)
+df6 <- runLevel("t1", t1)
 
 # combine results in a single dataframe
-all <- rbind(df1, df2, df3, df4, df5)
+all <- rbind(df1, df2, df3, df4, df5, df6)
 
 # output everything to a CSV file.
 write.csv(all[c("id", "treatment", "num_circles", "num_required_zones", "num_actual_zones", "num_extra_zones", "num_missing_zones", "pearson_coeffecient", "duration")], file="results.csv", row.names=FALSE, quote=FALSE)
+
+print(s5)
