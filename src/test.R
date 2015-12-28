@@ -76,17 +76,8 @@ runLevel <- function (id, area_spec) {
   rbind(vennom_level, venneuler_level)
 }
 
-# Run VennEuler for a single input area_spec
-runVennEulerLevel <- function (id, area_spec) {
-  print("venneuler")
-  # Run venneuler and time how long it takes in milliseconds.
-  duration <- system.time(venneuler  <- venneuler(area_spec))
-
-  # Now post some of the venneuler data away to compute the actual areas.
-  radii = mapply(function(d) {d/2.0}, venneuler$diameters) # convert diameters into radii
-  circles <- cbind(venneuler$centers, radius=radii)
-  cs <- foreach (i=1:nrow(circles)) %do% c(circles[i,][1], circles[i,][2], circles[i,][3], label=rownames(circles)[i])
-  json <- toJSON(list(circles=cs))
+getAreas <- function (circles) {
+ json <- toJSON(list(circles=circles))
 
   # POST to web service
   httpheader <- c(Accept="application/json; charset=UTF-8",
@@ -94,6 +85,19 @@ runVennEulerLevel <- function (id, area_spec) {
   # hardcoded URL as testharness is only ever run by someone who has a local running service.
   result <- postForm('http://localhost:8080/areas', .opts=list(httpheader=httpheader
                                             , postfields=json))
+}
+
+# Run VennEuler for a single input area_spec
+runVennEulerLevel <- function (id, area_spec) {
+  # Run venneuler and time how long it takes in milliseconds.
+  duration <- system.time(venneuler  <- venneuler(area_spec))
+
+  # Now post some of the venneuler data away to compute the actual areas.
+  radii = mapply(function(d) {d/2.0}, venneuler$diameters) # convert diameters into radii
+  circles <- cbind(venneuler$centers, radius=radii)
+  cs <- foreach (i=1:nrow(circles)) %do% c(circles[i,][1], circles[i,][2], circles[i,][3], label=rownames(circles)[i])
+
+  result <- getAreas(cs)
 
   # plot the diagram and save it
   pdf(paste(id, "venneuler.pdf", sep="-"))
@@ -118,7 +122,6 @@ runVennEulerLevel <- function (id, area_spec) {
 
 # Run the vennom treatment with an area specification
 runVennomLevel <- function (id, area_spec) {
-  print("vennom")
   duration <- system.time(euler <- euleR(area_spec))
 
   # plot the diagram and save it
@@ -126,8 +129,10 @@ runVennomLevel <- function (id, area_spec) {
   plot(euler)
   dev.off()
 
+  result <- getAreas(euler$circles)
+
   # Euler Frame
-  ef <- gather(euler)
+  ef <- gather(fromJSON(result))
 
   ef <- normalizeFrameLabels(ef)
   area_spec <- normalizeFrameLabels(area_spec)
@@ -139,6 +144,14 @@ runVennomLevel <- function (id, area_spec) {
   cmp <- populateFrame(id, area_spec, ef)
 
   cbind(df, cmp)
+}
+
+frameToString <- function(df) {
+  r_string <- ""
+  for(i in names(df)) {
+        r_string <- paste(r_string, i, "=", df[[i]], sep=" ")
+  }
+  r_string
 }
 
 # Peform the correlation computation
@@ -168,9 +181,8 @@ populateFrame <- function (diagram_id, expected_frame,  actual_frame) {
 
   # diagram id, Pearson coefficient, number of circles, number of zones required, # over requirements, # under requirements
   #length(circles) is number of circles
-  print(actual_frame)
   pearson_coeff <- cor(actual_frame, expected_frame)
-  data.frame(t(c(id=diagram_id, pearson_coeffecient=pearson_coeff, num_circles=length(required_circles), num_required_zones=length(required_zones), num_extra_zones=length(extra), num_missing_zones=length(missing), num_actual_zones=length(actual_zones))))
+  data.frame(t(c(id=diagram_id, pearson_coeffecient=pearson_coeff, num_circles=length(required_circles), num_required_zones=length(required_zones), num_extra_zones=length(extra), num_missing_zones=length(missing), num_actual_zones=length(actual_zones), expected_spec=frameToString(expected_frame), actual_value=frameToString(actual_frame))))
 }
 
 # Given the labels of the contours, generate the venn set of zones (in a
@@ -222,6 +234,4 @@ df6 <- runLevel("t1", t1)
 all <- rbind(df1, df2, df3, df4, df5, df6)
 
 # output everything to a CSV file.
-write.csv(all[c("id", "treatment", "num_circles", "num_required_zones", "num_actual_zones", "num_extra_zones", "num_missing_zones", "pearson_coeffecient", "duration")], file="results.csv", row.names=FALSE, quote=FALSE)
-
-print(s5)
+write.csv(all[c("id", "treatment", "num_circles", "num_required_zones", "num_actual_zones", "num_extra_zones", "num_missing_zones", "pearson_coeffecient", "duration", "expected_spec", "actual_value")], file="results.csv", row.names=FALSE, quote=FALSE)
