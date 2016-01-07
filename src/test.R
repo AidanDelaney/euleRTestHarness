@@ -46,9 +46,9 @@ source("src/books.R")
 # TODO: automate all of this.
 s1 <- c(A=100, B=100, C=100, "A&B"=20, "A&C"=20, "B&C"=20, "A&B&C"=10) # Venn 3
 s2 <- c(A=200, "A&B"=100) # Tunnel 2
-s3 <- c(A = 4, B = 6,C = 3, D = 2, E = 7, F = 3, "A&B" = 2, "A&F" = 2, "B&C" = 2, "B&D" = 1, "B&F" = 2, "C&D" = 1, "D&E" = 1, "E&F" = 1, "A&B&F" = 1, "B&C&D" = 1)
+s3 <- c(A = 400, B = 600,C = 300, D = 200, E = 700, F = 300, "A&B" = 200, "A&F" = 200, "B&C" = 200, "B&D" = 100, "B&F" = 200, "C&D" = 100, "D&E" = 100, "E&F" = 100, "A&B&F" = 100, "B&C&D" = 100)
 # SE ->  S, Treat -> T, Anti-CCP -> A ,DAS28 -> D
-s4 <- c(S = 13, T = 28, A = 101, D = 91, "S&T" = 1, "D&S" = 14, "T&A" = 6, "A&D&S" = 1)
+s4 <- c(S = 130, T = 280, A = 1010, D = 910, "S&T" = 10, "D&S" = 140, "T&A" = 60, "A&D&S" = 10)
 s5 <- bookData()
 
 t1 <- c(A=100, B=100, C=100, D=100, "A&B"=50, "A&C"=50, "A&D"=50, "B&C"=50, "B&D"=50, "C&D"=50, "A&B&C"=20, "A&C&D"=20, "B&C&D"=20, "A&B&C&D"=5)
@@ -129,10 +129,15 @@ runVennomLevel <- function (id, area_spec) {
   plot(euler)
   dev.off()
 
+  t_areas <- euler$areas
+  #print(euler$circles)
+  #print(t_areas)
+
   result <- getAreas(euler$circles)
 
   # Euler Frame
   ef <- gather(fromJSON(result))
+  #print(ef)
 
   ef <- normalizeFrameLabels(ef)
   area_spec <- normalizeFrameLabels(area_spec)
@@ -178,6 +183,9 @@ populateFrame <- function (diagram_id, expected_frame,  actual_frame) {
   # Normalise each frame such that all areas add up to 1.0
   actual_frame   <- normalizeFrame(actual_frame)
   expected_frame <- normalizeFrame(expected_frame)
+  
+  print(frameToString(expected_frame))
+  print(frameToString(actual_frame))
 
   # diagram id, Pearson coefficient, number of circles, number of zones required, # over requirements, # under requirements
   #length(circles) is number of circles
@@ -214,7 +222,9 @@ normalizeFrameLabels <- function (df) {
   # This allows us to compare the output results with the input specification
   names(df) <- gsub("-.*$", "", names(df))
   names(df) <- lapply(names(df), strSort)
-  df
+
+  # Order the dataframe by alphabetic names
+  df[order(names(df))]
 }
 
 # Sort a string in lexiographic order.
