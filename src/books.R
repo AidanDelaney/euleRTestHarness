@@ -10,21 +10,30 @@ s_book <- "SilasMarner.txt"
 m_book <- "MobyDick.txt"
 a_book <- "Macbeth.txt"
 
+# Top n books (29) from project Gutenberg before you hit the first "repeat"
+# i.e. one of the top books is the collected Sherlock Homes stories by Arthur Conan Doyle, where as the 30th most favourite book is "A Study in Scarlet" (excellent TV adaption on BBC!).  This is a repeat of a portion of the collected stories, so we stopped at 29.
+
+#
+# TODO: clean up all occurances of the magic number 29 in this file and test.R
+# FIXME: cut to 26 as we onlt have 26 built in labels in the letters function.
+books = list("1342", "11", "46", "1661", "27827", "2660", "76", "98", "74", "84", "2591", "30254", "1400", "5200", "174", "1952", "135", "345", "1232", "158", "844", "16", "1184", "23", "1322") #, "4300", "2701", "1260", "17135")
+
 checkCache <- function (url, cache_file) {
   if(!file.exists(cache_file)) {
     download.file(url, cache_file)
   }
 }
 
-checkCache("http://www.gutenberg.org/cache/epub/4300/pg4300.txt", u_book)
-checkCache("http://www.gutenberg.org/cache/epub/10/pg10.txt", b_book)
-checkCache("http://www.gutenberg.org/cache/epub/174/pg174.txt", d_book)
-checkCache("http://www.gutenberg.org/cache/epub/550/pg550.txt", s_book)
-checkCache("http://www.gutenberg.org/cache/epub/2701/pg2701.txt", m_book)
-checkCache("http://www.gutenberg.org/cache/epub/2264/pg2264.txt", a_book)
+downloadBooks <- function (bs) {
+  for(book in bs) {
+    url = paste0("http://www.gutenberg.org/cache/epub/", book, "/pg", book, ".txt")
+    file = paste0(book, ".txt")
+    checkCache(url, file)
+  }
+}
 
 fileToWordList <- function(file) {
-  corpus <- VCorpus(DirSource(directory="/home/aidan/Projects/euleRTestHarness", pattern=file))
+  corpus <- VCorpus(DirSource(directory=".", pattern=file))
 
   corpus <- tm_map(corpus, removePunctuation)
   corpus <- tm_map(corpus, stripWhitespace)
@@ -100,3 +109,31 @@ bookData <- function () {
   vennz <- c(u, b, d, s, m, a)
   generateVennCombinations(vennz)
 }
+
+pseudoRandomCombination <- function (cnum) {
+  print(paste0("Getting ", cnum, " books"))
+  bs <- sample(books, cnum)
+  print(bs)
+  vennz <- c()
+
+  # horribly procedural
+  i <- 1
+  for(b in bs) {
+    print(paste0("\tGetting book ", b, ".txt"))
+    words = list(b=fileToWordList(file=paste0(b, ".txt")))
+    names(words) <- letters[i]
+    vennz = c(vennz, words)
+    i <- i + 1
+  }
+  print(labels(vennz))
+  generateVennCombinations(vennz)
+}
+
+downloadBooks(books)
+
+checkCache("http://www.gutenberg.org/cache/epub/4300/pg4300.txt", u_book)
+checkCache("http://www.gutenberg.org/cache/epub/10/pg10.txt", b_book)
+checkCache("http://www.gutenberg.org/cache/epub/174/pg174.txt", d_book)
+checkCache("http://www.gutenberg.org/cache/epub/550/pg550.txt", s_book)
+checkCache("http://www.gutenberg.org/cache/epub/2701/pg2701.txt", m_book)
+checkCache("http://www.gutenberg.org/cache/epub/2264/pg2264.txt", a_book)

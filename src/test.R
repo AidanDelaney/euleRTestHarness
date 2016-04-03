@@ -70,10 +70,17 @@ gather <- function (x) {
 # TODO: generate the id from the name of the area_spec, this allows the
 # automation referred to above.
 runLevel <- function (id, area_spec) {
+
+  # FIXME: Evil scale hack.
+  area_spec <- sapply(area_spec, function(x) { x * 100 })
+  #print(area_spec)
+
   vennom_level <- runVennomLevel (id, area_spec)
   venneuler_level <- runVennEulerLevel (id, area_spec)
 
-  rbind(vennom_level, venneuler_level)
+  res <- rbind(vennom_level, venneuler_level)
+  report(res)
+  res
 }
 
 getAreas <- function (circles) {
@@ -100,7 +107,7 @@ runVennEulerLevel <- function (id, area_spec) {
   result <- getAreas(cs)
 
   # plot the diagram and save it
-  pdf(paste(id, "venneuler.pdf", sep="-"))
+  svg(paste(id, "venneuler.svg", sep="-"))
   plot(venneuler)
   dev.off()
 
@@ -125,7 +132,7 @@ runVennomLevel <- function (id, area_spec) {
   duration <- system.time(euler <- euleR(area_spec))
 
   # plot the diagram and save it
-  pdf(paste(id,"vennom.pdf", sep="-"))
+  svg(paste(id,"vennom.svg", sep="-"))
   plot(euler)
   dev.off()
 
@@ -184,8 +191,8 @@ populateFrame <- function (diagram_id, expected_frame,  actual_frame) {
   actual_frame   <- normalizeFrame(actual_frame)
   expected_frame <- normalizeFrame(expected_frame)
   
-  print(frameToString(expected_frame))
-  print(frameToString(actual_frame))
+#  print(frameToString(expected_frame))
+#  print(frameToString(actual_frame))
 
   # diagram id, Pearson coefficient, number of circles, number of zones required, # over requirements, # under requirements
   #length(circles) is number of circles
@@ -232,16 +239,162 @@ strSort <- function(x) {
   sapply(lapply(strsplit(x, NULL), sort), paste, collapse="")
 }
 
+report <- function(x) {
+  write.table(x[c("id", "treatment", "num_circles", "num_required_zones", "num_actual_zones", "num_extra_zones", "num_missing_zones", "pearson_coeffecient", "duration")], file="results.csv", row.names=FALSE, quote=FALSE, sep=",", append=TRUE, col.names = FALSE)
+}
+
 # This runs the actual experiment
 df1 <- runLevel("s1", s1)
+# Overwrite the results with the colnames -- pretty evil, but it works.
+write.table(df1[c("id", "treatment", "num_circles", "num_required_zones", "num_actual_zones", "num_extra_zones", "num_missing_zones", "pearson_coeffecient", "duration")], file="results.csv", row.names=FALSE, quote=FALSE, sep=",", append=FALSE, col.names = TRUE)
+
 df2 <- runLevel("s2", s2)
 df3 <- runLevel("s3", s3)
 df4 <- runLevel("s4", s4)
 df5 <- runLevel("s5", s5)
 df6 <- runLevel("t1", t1)
 
-# combine results in a single dataframe
-all <- rbind(df1, df2, df3, df4, df5, df6)
+# This is a silly way of doing things, but it allows us to pinpoint failures more easily.
+set.seed(0)
+r1 <- pseudoRandomCombination(sample(2:10,1))
 
-# output everything to a CSV file.
-write.csv(all[c("id", "treatment", "num_circles", "num_required_zones", "num_actual_zones", "num_extra_zones", "num_missing_zones", "pearson_coeffecient", "duration", "expected_spec", "actual_value")], file="results.csv", row.names=FALSE, quote=FALSE)
+# Again, horribly procedural, but allows us to isolate instances of failure for further processing
+#print(r1)
+rf1 <- runLevel("1", r1)
+
+# Won;t run due to issues in VennEuler package.
+r2 <- pseudoRandomCombination(sample(2:10,1))
+##print(r2)
+rf2 <- runLevel("2", r2)
+
+r3 <- pseudoRandomCombination(sample(2:10,1))
+#print(r3)
+rf3 <- runLevel("3", r3)
+
+r4 <- pseudoRandomCombination(sample(2:10,1))
+#print(r4)
+rf4 <- runLevel("4", r4)
+#report(rf4)
+
+r5 <- pseudoRandomCombination(sample(2:10,1))
+print(r5)
+rf5 <- runLevel("5", r5)
+#report(rf5)
+
+r6 <- pseudoRandomCombination(sample(2:10,1))
+#print(r6)
+rf6 <- runLevel("6", r6)
+#report(rf6)
+
+r7 <- pseudoRandomCombination(sample(2:10,1))
+#print(r7)
+rf7 <- runLevel("7", r7)
+#report(rf7)
+
+r8 <- pseudoRandomCombination(sample(2:10,1))
+print(r8)
+rf8 <- runLevel("8", r8)
+#report(rf8)
+
+r9 <- pseudoRandomCombination(sample(2:10,1))
+print(r9)
+rf9 <- runLevel("9", r9)
+#report(rf9)
+
+r10 <- pseudoRandomCombination(sample(2:10,1))
+print(r10)
+rf10 <- runLevel("10", r10)
+#write.table(rf10[c("id", "treatment", "num_circles", "num_required_zones", "num_actual_zones", "num_extra_zones", "num_missing_zones", "pearson_coeffecient", "duration")], file="results.csv", row.names=FALSE, quote=FALSE, append=TRUE, sep=",", col.names=FALSE)
+
+r11 <- pseudoRandomCombination(sample(2:10,1))
+rf11 <- runLevel("11", r11)
+#report(rf11)
+
+r12 <- pseudoRandomCombination(sample(2:10,1))
+rf12 <- runLevel("12", r12)
+#report(rf12)
+
+r13 <- pseudoRandomCombination(sample(2:10,1))
+rf13 <- runLevel("13", r13)
+#report(rf13)
+
+
+r14 <- pseudoRandomCombination(sample(2:10,1))
+rf14 <- runLevel("14", r14)
+#report(rf14)
+
+r15 <- pseudoRandomCombination(sample(2:10,1))
+rf15 <- runLevel("15", r15)
+#report(rf15)
+
+r16 <- pseudoRandomCombination(sample(2:10,1))
+rf16 <- runLevel("16", r16)
+#report(rf16)
+
+r17 <- pseudoRandomCombination(sample(2:10,1))
+rf17 <- runLevel("17", r17)
+#report(rf17)
+
+
+
+r18 <- pseudoRandomCombination(sample(2:10,1))
+rf18 <- runLevel("18", r18)
+#report(rf18)
+
+
+r19 <- pseudoRandomCombination(sample(2:10,1))
+rf19 <- runLevel("19", r19)
+#report(rf19)
+
+
+r20 <- pseudoRandomCombination(sample(2:10,1))
+rf20 <- runLevel("20", r20)
+#report(rf20)
+
+r21 <- pseudoRandomCombination(sample(2:10,1))
+rf21 <- runLevel("21", r21)
+#report(rf21)
+
+
+r22 <- pseudoRandomCombination(sample(2:10,1))
+rf22 <- runLevel("22", r22)
+#report(rf22)
+
+r23 <- pseudoRandomCombination(sample(2:10,1))
+rf23 <- runLevel("23", r23)
+#report(rf23)
+
+r24 <- pseudoRandomCombination(sample(2:10,1))
+rf24 <- runLevel("24", r24)
+#report(rf24)
+
+r25 <- pseudoRandomCombination(sample(2:10,1))
+rf25 <- runLevel("25", r25)
+#write.table(rf25[c("id", "treatment", "num_circles", "num_required_zones", "num_actual_zones", "num_extra_zones", "num_missing_zones", "pearson_coeffecient", "duration")], file="results.csv", row.names=FALSE, quote=FALSE, append=TRUE, sep=",", col.names=FALSE)
+
+r26 <- pseudoRandomCombination(sample(2:10,1))
+rf26 <- runLevel("26", r26)
+#report(rf26)
+
+r27 <- pseudoRandomCombination(sample(2:10,1))
+rf27 <- runLevel("27", r27)
+#report(rf27)
+
+r28 <- pseudoRandomCombination(sample(2:10,1))
+rf28 <- runLevel("28", r28)
+#report(rf28)
+
+r29 <- pseudoRandomCombination(sample(2:10,1))
+rf29 <- runLevel("29", r29)
+#report(rf29)
+
+r30 <- pseudoRandomCombination(sample(2:10,1))
+rf30 <- runLevel("30", r30)
+#report(rf30)
+
+# combine results in a single dataframe
+#all <- rbind(df1, df2, df3, df4, df5, df6, rf1, rf2, rf3, rf4, rf5, rf6, rf7, rf8, rf9, rf10)
+#all <- rbind(rf1, rf3, rf4, rf5, rf7, rf8, rf9, rf10
+#                  , rf12,  rf13, rf14, rf15, rf16, rf17, rf18, rf19, rf20
+#                  , rf21, rf22,  rf23, rf24, rf25, rf26, rf27, rf28, rf29, rf30
+#                  )
