@@ -80,13 +80,13 @@ calculateZoneCardinality <- function(inz, outz) {
   e
 }
 
-generateVennCombinations <- function(d) {
+generateVennCombinations <- function(d, f) {
   labels <- sort(labels(d))
   unlist(foreach (i=1:length(labels)) %do% apply(combn(labels, i), 2, function (col) { 
       outs <- setdiff(labels, col)
  
       inz <- d[col]
-      card <- calculateZoneCardinality(d[col], d[outs])
+      card <- f(d[col], d[outs])
       list(card)
     }))
 }
@@ -107,7 +107,7 @@ bookData <- function () {
   a <- list("A"=macbeth)
 
   vennz <- c(u, b, d, s, m, a)
-  generateVennCombinations(vennz)
+  generateVennCombinations(vennz, calculateZoneCardinality)
 }
 
 pseudoRandomCombination <- function (cnum) {
@@ -126,7 +126,7 @@ pseudoRandomCombination <- function (cnum) {
     i <- i + 1
   }
   print(labels(vennz))
-  generateVennCombinations(vennz)
+  generateVennCombinations(vennz, calculateZoneCardinality)
 }
 
 downloadBooks(books)

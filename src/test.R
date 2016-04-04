@@ -36,6 +36,7 @@ library("euleR")
 library("venneuler")
 
 source("src/books.R")
+source("src/randCircles.R")
 # specs
 # Adding a spec:
 #
@@ -256,6 +257,13 @@ df6 <- runLevel("t1", t1)
 
 # This is a silly way of doing things, but it allows us to pinpoint failures more easily.
 set.seed(0)
+
+rands <- (1:100)
+sapply(rands, function (x) {
+  print(paste0("Running random ", x))
+  runLevel(paste0("rand", x), randCircles())
+  })
+
 r1 <- pseudoRandomCombination(sample(2:10,1))
 
 # Again, horribly procedural, but allows us to isolate instances of failure for further processing
@@ -391,6 +399,7 @@ rf29 <- runLevel("29", r29)
 r30 <- pseudoRandomCombination(sample(2:10,1))
 rf30 <- runLevel("30", r30)
 #report(rf30)
+
 
 # combine results in a single dataframe
 #all <- rbind(df1, df2, df3, df4, df5, df6, rf1, rf2, rf3, rf4, rf5, rf6, rf7, rf8, rf9, rf10)
